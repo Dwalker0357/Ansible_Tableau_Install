@@ -1,0 +1,27 @@
+---
+# tasks file for tableau_install
+
+- name: Load variables from vars.yaml
+  include_vars:  "vars.yaml"  
+  no_log: 'no'
+
+
+- name: Download Tableau rpm
+  become: yes
+  become_user: "{{ Linux_Username }}"
+  get_url:
+    url: "https://downloads.tableau.com/esdalt/2021.2.7/{{ Tableau_Version }}" 
+    dest: /tmp
+    mode: '0770'
+
+
+- name: Install Tableau rpm
+  become: yes
+  yum:
+    name: "/tmp/{{ Tableau_Version }}"
+    state: present
+
+
+- name: Initialize Tableau
+  become: yes
+  ansible.builtin.shell: "/opt/tableau/tableau_server/packages/{{ Initialize_Script_Location }}/initialize-tsm -a {{ Linux_Username }} --accepteula -f"

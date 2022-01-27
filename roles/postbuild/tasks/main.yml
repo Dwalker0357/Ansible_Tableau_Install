@@ -1,0 +1,126 @@
+---
+# tasks file for postbuild
+
+- name: Load variables from vars.yaml
+  include_vars:  "vars.yaml"  
+  no_log: "no"
+
+
+- name: Install Microsoft Powershell
+  become: yes
+  yum:
+    name: https://github.com/PowerShell/PowerShell/releases/download/v7.2.1/powershell-lts-7.2.1-1.rh.x86_64.rpm
+    state: present
+
+
+- name: Install Nano
+  become: True
+  yum:
+    name: nano 
+    state: present
+
+
+- name: Install Screen
+  become: True
+  yum:
+    name: screen 
+    state: present
+
+
+- name: Creating user "{{ Linux_Username }}" without admin access
+  become: True
+  user: 
+    name: "{{ Linux_Username }}"
+    password: "{{ Linux_Username_Password | password_hash('sha512') }}"
+
+
+- name: Create group tsmadmin 
+  become: True  
+  ansible.builtin.group:
+    name: tsmadmin
+    state: present
+
+
+- name: Adding user "{{ Linux_Username }}" to group tsmadmin
+  become: True
+  user:
+    name: "{{ Linux_Username }}"
+    groups: tsmadmin
+    append: yes
+
+
+- name: Allow "{{ Linux_Username }}" to have passwordless sudo
+  become: True
+  lineinfile:
+    dest: /etc/sudoers
+    state: present
+    line: "{{ Linux_Username }} ALL=(ALL) NOPASSWD:ALL"
+    validate: "visudo -cf %s"
+
+
+- name: Create directory /opt/tableau/scripts/backup
+  become: True
+  ansible.builtin.file:
+    path: /opt/tableau/scripts/backup
+    state: directory
+    owner: "{{ Linux_Username }}"
+    group: "{{ Linux_Username }}"
+    mode: "0775"
+
+
+- name: Create directory /var/opt/tableau/backups
+  become: True
+  ansible.builtin.file:
+    path: /var/opt/tableau/backups
+    state: directory
+    owner: "{{ Linux_Username }}"
+    group: "{{ Linux_Username }}"
+    mode: "0775"
+
+
+- name: Create directory /opt/tableau/scripts/tsm-status
+  become: True
+  ansible.builtin.file:
+    path: /opt/tableau/scripts/tsm-status
+    state: directory
+    owner: "{{ Linux_Username }}" 
+    group: "{{ Linux_Username }}"
+    mode: "0775"
+
+
+- name: Create directory /var/log/tsbackup 
+  become: True
+  ansible.builtin.file:
+    path: /var/log/tsbackup
+    state: directory
+    owner: "{{ Linux_Username }}" 
+    group: "{{ Linux_Username }}"
+    mode: "0775"
+
+
+- name: Create directory /var/log/tabstatus
+  become: True
+  ansible.builtin.file:
+    path: /var/log/tabstatus
+    state: directory
+    owner: "{{ Linux_Username }}" 
+    group: "{{ Linux_Username }}"
+    mode: "0775"
+
+
+- name: Copy registration.template.json to {{ Linux_Username }} home directory
+  become: True
+  ansible.builtin.copy:
+    src: registration.template.json
+    dest: /tmp
+    owner: "{{ Linux_Username }}"
+    group: "{{ Linux_Username }}" 
+    
+
+- name: Copy configbasic.template.json to {{ Linux_Username }} home directory
+  become: True
+  ansible.builtin.copy:
+    src: configbasic.template.json
+    dest: /tmp
+    owner: "{{ Linux_Username }}"
+    group: "{{ Linux_Username }}" 

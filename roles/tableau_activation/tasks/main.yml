@@ -1,0 +1,57 @@
+---
+# tasks file for tableau_activation
+
+- name: Load variables from vars.yaml
+  include_vars:  "vars.yaml"  
+  no_log: "no"
+
+
+- name: Tableau license trial activation
+  become: yes
+  become_user: "{{ Linux_Username }}"
+  ansible.builtin.shell: "{{ Source }}/tsm licenses activate -t"
+  when: Trial_licence == True
+
+
+- name: Tableau license proudct key activation
+  become: yes
+  become_user: "{{ Linux_Username }}"
+  ansible.builtin.shell: "{{ Source }}/tsm licenses activate --license-key {{ License_key }}"
+  when: Trial_licence == False
+
+
+- name: License registration.template.json
+  become: yes
+  become_user: "{{ Linux_Username }}"
+  ansible.builtin.shell: "{{ Source }}/tsm register --file /tmp/registration.template.json"  
+
+
+- name: Import settings from configbasic.template.json 
+  become: yes
+  become_user: "{{ Linux_Username }}"
+  ansible.builtin.shell: "{{ Source }}/tsm settings import -f /tmp/configbasic.template.json"   
+
+
+- name: Tsm configuration 
+  become: yes
+  become_user: "{{ Linux_Username }}"
+  ansible.builtin.shell: "{{ Source }}/tsm configuration set -k install.component.samples -v false"  
+
+
+- name: Apply tsm changes 
+  become: yes
+  become_user: "{{ Linux_Username }}"
+  ansible.builtin.shell: "{{ Source }}/tsm pending-changes apply --ignore-prompt"
+
+
+- name: Tsm initialize
+  become: yes
+  become_user: "{{ Linux_Username }}"
+  ansible.builtin.shell: "{{ Source }}/tsm initialize --start-server --request-timeout 1800" 
+  async: 1800
+
+
+- name: Tsm initialuser
+  become: yes
+  become_user: "{{ Linux_Username }}"
+  ansible.builtin.shell: "{{ Source }}/tabcmd initialuser --server http://localhost --username {{ Tableau_User }} --password {{ Tableau_Password }}"  

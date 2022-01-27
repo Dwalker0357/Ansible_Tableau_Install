@@ -1,0 +1,44 @@
+---
+# tasks file for backup
+
+- name: Load variables from vars.yaml
+  include_vars:  "vars.yaml"  
+  no_log: "no"
+
+
+- name: Chown backup file storage directory so its owned by tableau
+  become: True
+  ansible.builtin.file:
+    path: "{{ Backup_Location }}"
+    state: directory
+    owner: tableau
+    group: tableau
+    mode: "0755"
+
+
+- name: Set backup file location
+  become: yes
+  become_user: "{{ Linux_Username }}"
+  ansible.builtin.shell: "{{ Source }}/tsm configuration set -k basefilepath.backuprestore -v {{ Backup_Location  }}"
+
+
+- name: Set ziplogs location
+  become: yes
+  become_user: "{{ Linux_Username }}"
+  ansible.builtin.shell: "{{ Source }}/tsm configuration set -k basefilepath.log_archive -v {{ Backup_Location  }}"  
+
+
+- name: Apply new tsm changes   
+  become: yes
+  become_user: "{{ Linux_Username }}"
+  ansible.builtin.shell:  "{{ Source }}/tsm pending-changes apply --ignore-prompt"
+
+
+- name: Create a tableau backup schedule        
+  become: yes
+  become_user: "{{ Linux_Username }}"
+  ansible.builtin.shell: "{{ Source }}/tsm maintenance backup -f {{ Backup_Name }} -sr {{ Backup_Recursion }} -st {{ Backup_Time }} -sd {{ Backup_Day }} -sn {{ Backup_Schedule_Name }}"
+  register: Backup_Result
+
+
+- debug: msg="{{ Backup_Result.stdout }}"

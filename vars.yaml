@@ -1,0 +1,29 @@
+Tableau_Version: tableau-server-2021-2-7.x86_64.rpm
+
+Initialize_Script_Location: scripts.20212.21.1217.2251
+
+Linux_Username: admin
+
+Linux_Username_Password: password123!
+
+Tableau_User: admin
+
+Tableau_Password: password123!
+
+Backup_Location: /var/opt/tableau/backups
+
+Backup_Name: Tableau_Sunday_Backup
+
+Backup_Recursion: monthly
+
+Backup_Time: "12:00"
+
+Backup_Day: "6"
+
+Backup_Schedule_Name: Testing_4
+
+Source: /opt/tableau/tableau_server/packages/customer-bin.20212.21.1217.2251
+
+Trial_licence: True
+
+License_key: <insert product key here>

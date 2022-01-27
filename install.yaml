@@ -1,0 +1,9 @@
+---
+- hosts: Tableau_Hosts
+
+# All variables are configured in the base directory vars.yaml  
+
+  roles:
+    - postbuild
+    - tableau_install
+    - tableau_activation
